@@ -1,5 +1,6 @@
 package main
 
+import "core:fmt"
 import os "core:os"
 import strings "core:strings"
 
@@ -58,6 +59,20 @@ entity_make :: proc(name: string, position: rl.Vector2) -> Entity {
 	return entity
 }
 
+render_text_menu :: proc(
+	entries: ^[dynamic]cstring,
+	font_size: i32,
+	color: rl.Color,
+	offset: rl.Vector2 = {10, 10},
+) {
+	v_offset := offset.y
+
+	for entry in entries {
+		rl.DrawText(entry, cast(i32)offset.x, cast(i32)v_offset, font_size, color)
+		v_offset += offset.y + cast(f32)font_size
+	}
+}
+
 main :: proc() {
 	rl.InitWindow(480, 360, "Odin Game")
 	defer rl.CloseWindow()
@@ -65,6 +80,11 @@ main :: proc() {
 	rl.SetWindowState(rl.ConfigFlags{.WINDOW_RESIZABLE, .WINDOW_MAXIMIZED, .VSYNC_HINT})
 
 	background_color := rl.ColorFromHSV(108.0, 0.6, 0.73)
+
+	debug_entries := make([dynamic]cstring)
+	defer delete(debug_entries)
+
+	debug := false
 
 	entities := make([dynamic]Entity)
 	defer delete(entities)
@@ -86,6 +106,12 @@ main :: proc() {
 	}
 
 	for (!rl.WindowShouldClose()) {
+		clear(&debug_entries)
+
+		if (rl.IsKeyPressed(rl.KeyboardKey.F3)) {
+			debug = !debug
+		}
+
 		rl.BeginDrawing()
 		defer rl.EndDrawing()
 
@@ -100,6 +126,15 @@ main :: proc() {
 			rl.DrawTextureV(entity.textures[entity.frame], entity.position, rl.WHITE)
 		}
 
-		rl.DrawText(rl.TextFormat("FPS: %d", rl.GetFPS()), 10, 10, 24, rl.WHITE)
+		if (debug) {
+			append(&debug_entries, rl.TextFormat("FPS: %d", rl.GetFPS()))
+			append(
+				&debug_entries,
+				rl.TextFormat("Mouse: (%d, %d)", rl.GetMouseX(), rl.GetMouseY()),
+			)
+			append(&debug_entries, rl.TextFormat("Move mode: %s", move ? "true" : "false"))
+
+			render_text_menu(&debug_entries, 24, rl.BLUE)
+		}
 	}
 }
