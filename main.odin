@@ -17,10 +17,12 @@ Entity :: struct {
 	textures: [dynamic]rl.Texture2D,
 	position: rl.Vector2,
 	frame:    int,
+	moving:   bool,
 	state:    State,
 }
 
 entity_collide :: proc(entity: ^Entity, point: rl.Vector2) -> bool {
+	// TASK(20260921-195934): make rects reflect texture shape
 	entity_rect := rl.Rectangle {
 		entity.position.x,
 		entity.position.y,
@@ -42,11 +44,7 @@ entity_make :: proc(name: string, position: rl.Vector2) -> Entity {
 
 	for entry in entries {
 		if strings.contains(entry.name, ".png") {
-			texture_path := strings.clone_to_cstring(
-				strings.concatenate({sprite_path, "/", entry.name}),
-			)
-			defer delete(texture_path)
-			append(&sprites, rl.LoadTexture(texture_path))
+			append(&sprites, rl.LoadTexture(rl.TextFormat("%s/%s", sprite_path, entry.name)))
 		}
 	}
 
@@ -77,7 +75,7 @@ main :: proc() {
 	rl.InitWindow(480, 360, "Odin Game")
 	defer rl.CloseWindow()
 
-	rl.SetWindowState(rl.ConfigFlags{.WINDOW_RESIZABLE, .WINDOW_MAXIMIZED, .VSYNC_HINT})
+	rl.SetWindowState(rl.ConfigFlags{.WINDOW_RESIZABLE, .VSYNC_HINT})
 
 	background_color := rl.ColorFromHSV(108.0, 0.6, 0.73)
 
@@ -85,6 +83,7 @@ main :: proc() {
 	defer delete(debug_entries)
 
 	debug := false
+	move := false
 
 	entities := make([dynamic]Entity)
 	defer delete(entities)
@@ -112,17 +111,45 @@ main :: proc() {
 			debug = !debug
 		}
 
+		if (rl.IsKeyPressed(rl.KeyboardKey.M)) {
+			move = !move
+		}
+
 		rl.BeginDrawing()
 		defer rl.EndDrawing()
 
-		if (entity_collide(&entities[0], rl.GetMousePosition()) &&
-			   rl.IsMouseButtonDown(rl.MouseButton.LEFT)) {
-			rl.ClearBackground(rl.RED)
-		} else {
-			rl.ClearBackground(background_color)
-		}
+		rl.ClearBackground(background_color)
 
 		for &entity in entities {
+			if (move &&
+				   entity_collide(&entity, rl.GetMousePosition()) &&
+				   rl.IsMouseButtonPressed(rl.MouseButton.LEFT)) {
+				entity.moving = true
+			}
+
+			if (entity_collide(&entity, rl.GetMousePosition()) &&
+				   rl.IsMouseButtonReleased(rl.MouseButton.LEFT)) {
+				entity.moving = false
+			}
+
+			if (entity.moving) {
+				entity.position =
+					rl.GetMousePosition() -
+					rl.Vector2 {
+							cast(f32)entity.textures[entity.frame].width / 2,
+							cast(f32)entity.textures[entity.frame].height / 2,
+						}
+
+				if (debug) {
+					fmt.printfln(
+						"Entity %s -> (%f, %f)",
+						entity.name,
+						entity.position.x,
+						entity.position.y,
+					)
+				}
+			}
+
 			rl.DrawTextureV(entity.textures[entity.frame], entity.position, rl.WHITE)
 		}
 
