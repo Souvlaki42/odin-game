@@ -84,7 +84,6 @@ main :: proc() {
 	if (config.fullscreen) { window_state |= rl.ConfigFlags{.WINDOW_MAXIMIZED } }
 
 	rl.SetWindowState(window_state)
-	background_color := rl.ColorFromHSV(108.0, 0.6, 0.73)
 
 	debug_entries := make([dynamic]cstring)
 	defer delete(debug_entries)
@@ -125,7 +124,7 @@ main :: proc() {
 		rl.BeginDrawing()
 		defer rl.EndDrawing()
 
-		rl.ClearBackground(background_color)
+		rl.ClearBackground(config.background)
 
 		for &entity in entities {
 			if (move &&
