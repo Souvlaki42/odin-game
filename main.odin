@@ -72,11 +72,18 @@ render_text_menu :: proc(
 }
 
 main :: proc() {
+	config := parse_config()
+	fmt.println("Configuration loaded: ", config)
+
 	rl.InitWindow(480, 360, "Odin Game")
 	defer rl.CloseWindow()
 
-	rl.SetWindowState(rl.ConfigFlags{.WINDOW_RESIZABLE, .VSYNC_HINT})
+	window_state: rl.ConfigFlags
+	if (config.vsync) { window_state |= rl.ConfigFlags{.VSYNC_HINT} }
+	if (config.resizable || config.fullscreen) { window_state |= rl.ConfigFlags{.WINDOW_RESIZABLE } }
+	if (config.fullscreen) { window_state |= rl.ConfigFlags{.WINDOW_MAXIMIZED } }
 
+	rl.SetWindowState(window_state)
 	background_color := rl.ColorFromHSV(108.0, 0.6, 0.73)
 
 	debug_entries := make([dynamic]cstring)
@@ -138,16 +145,7 @@ main :: proc() {
 					rl.Vector2 {
 							cast(f32)entity.textures[entity.frame].width / 2,
 							cast(f32)entity.textures[entity.frame].height / 2,
-						}
-
-				if (debug) {
-					fmt.printfln(
-						"Entity %s -> (%f, %f)",
-						entity.name,
-						entity.position.x,
-						entity.position.y,
-					)
-				}
+					}
 			}
 
 			rl.DrawTextureV(entity.textures[entity.frame], entity.position, rl.WHITE)
@@ -161,7 +159,7 @@ main :: proc() {
 			)
 			append(&debug_entries, rl.TextFormat("Move mode: %s", move ? "true" : "false"))
 
-			render_text_menu(&debug_entries, 24, rl.BLUE)
+			render_text_menu(&debug_entries, 24, rl.WHITE)
 		}
 	}
 }
