@@ -20,22 +20,23 @@ write_array :: proc(builder: ^strings.Builder, info: runtime.Type_Info_Array, va
 }
 
 write_struct :: proc(builder: ^strings.Builder, info: runtime.Type_Info_Struct, value: any, depth: int) {
-  fmt.sbprint(builder, "{\n")
+  if depth > 0 do fmt.sbprint(builder, "{\n")
   
   for field, field_index in reflect.struct_fields_zipped(value.id) {
     if field_index != 0 {
-      fmt.sbprint(builder, ",\n")
+      fmt.sbprint(builder, "\n")
     }
     
-    fmt.sbprintf(builder, "%s%s", strings.repeat("  ", depth), field.name)
+    fmt.sbprintf(builder, "%s", strings.repeat("  ", depth))
+    write_string(builder, field.name)
     fmt.sbprint(builder, " = ")
 
     field_ptr := uintptr(value.data) + field.offset
 
-    write_value(builder, any{data = rawptr(field_ptr), id = field.type.id}, depth)
+    write_value(builder, any{data = rawptr(field_ptr), id = field.type.id}, depth + 1)
   }
 
-  fmt.sbprintf(builder, "\n%s}", strings.repeat(" ", 2 * (depth - 1)))
+  if depth > 0 do fmt.sbprintf(builder, "\n%s}", strings.repeat("  ", depth - 1))
 }
 
 write_bool :: proc(builder: ^strings.Builder, value: any) {
@@ -100,7 +101,7 @@ write_value :: proc(builder: ^strings.Builder, value: any, depth: int = 0) {
     case runtime.Type_Info_Boolean:
       write_bool(builder, value)
     case runtime.Type_Info_Struct:
-      write_struct(builder, variant, value, depth + 1)
+      write_struct(builder, variant, value, depth)
     case runtime.Type_Info_Array:
       write_array(builder, variant, value, depth)
     case runtime.Type_Info_Named:
