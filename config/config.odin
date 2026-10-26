@@ -1,10 +1,9 @@
-package main
+package config
 
-import "core:fmt"
 import "core:strconv"
-import "core:text/regex"
-import "core:strings"
 import "core:os"
+import "core:strings"
+import "core:text/regex"
 
 import rl "vendor:raylib"
 
@@ -12,7 +11,16 @@ Config :: struct {
 	background: rl.Color,
 	vsync: bool,
 	fullscreen: bool,
-	resizable: bool,	
+	resizable: bool,
+  positions: struct {
+    Farm: rl.Vector2,
+    Fish: rl.Vector2,
+    Pig: rl.Vector2,
+    Goat: rl.Vector2,
+    Hen: rl.Vector2,
+    Sheep: rl.Vector2,
+    Cow: rl.Vector2
+  }
 }
 
 parse_hsv_color :: proc(text: string) -> (rl.Color, bool) {
@@ -35,7 +43,21 @@ parse_hsv_color :: proc(text: string) -> (rl.Color, bool) {
 }
 
 parse_config :: proc() -> Config {
-	config := Config{ background = rl.ColorFromHSV(108.0, 0.6, 0.73), vsync = true, fullscreen = false, resizable = true }
+	config := Config{
+    background = rl.ColorFromHSV(108.0, 0.6, 0.73),
+    vsync = true,
+    fullscreen = false,
+    resizable = true, 
+    positions = {
+      Farm = rl.Vector2{35, 600},
+      Fish = rl.Vector2{210, 82},
+      Pig = rl.Vector2{256, 229},
+      Goat = rl.Vector2{454, 279},
+      Hen = rl.Vector2{48, 153},
+      Sheep = rl.Vector2{73, 43},
+      Cow = rl.Vector2{367, 32}
+    }
+  }
 
 	data, err := os.read_entire_file("config.toml", context.allocator)
 	if err != nil {
@@ -74,11 +96,11 @@ write_config:: proc(config: ^Config) {
   sb, alloc_err := strings.builder_make()
   if (alloc_err != nil) { return }
 
-  bg_vec := rl.ColorToHSV(config.background)
+  write_value(&sb, config^)
 
-  _ = os.write_entire_file_from_string(
+  write_err := os.write_entire_file_from_string(
     "config.toml",
-    fmt.sbprintf(&sb, "background = {{ h = %f, s = %f, v = %f }}\nvsync = %t\nfullscreen = %t\nresizable = %t",
-  bg_vec.x, bg_vec.y, bg_vec.z, config.vsync, config.fullscreen, config.resizable)
+    strings.to_string(sb)
   )
+  if (write_err != nil) { return }
 }
