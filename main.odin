@@ -1,6 +1,6 @@
 package main
 
-import "core:fmt"
+import "core:log"
 import os "core:os"
 import strings "core:strings"
 
@@ -23,6 +23,7 @@ Entity :: struct {
 
 entity_collide :: proc(entity: ^Entity, point: rl.Vector2) -> bool {
 	// TASK(20260921-195934): make rects reflect texture shape
+	if len(entity.textures) <= 0 do return false
 	entity_rect := rl.Rectangle {
 		entity.position.x,
 		entity.position.y,
@@ -46,6 +47,11 @@ entity_make :: proc(name: string, position: rl.Vector2) -> Entity {
 		if strings.contains(entry.name, ".png") {
 			append(&sprites, rl.LoadTexture(rl.TextFormat("%s/%s", sprite_path, entry.name)))
 		}
+	}
+
+	if len(sprites) <= 0 {
+		log.fatalf("Entity '%s' has no sprites?", name)
+		return entity
 	}
 
 	entity.name = name
@@ -72,8 +78,7 @@ render_text_menu :: proc(
 }
 
 main :: proc() {
-	config := parse_config()
-	fmt.println("Configuration loaded: ", config)
+	context.logger = log.create_console_logger()
 
 	rl.InitWindow(480, 360, "Odin Game")
 	defer rl.CloseWindow()
@@ -127,6 +132,8 @@ main :: proc() {
 		rl.ClearBackground(config.background)
 
 		for &entity in entities {
+			if len(entity.textures) <= 0 do continue
+
 			if (move &&
 				   entity_collide(&entity, rl.GetMousePosition()) &&
 				   rl.IsMouseButtonPressed(rl.MouseButton.LEFT)) {
