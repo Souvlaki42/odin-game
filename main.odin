@@ -115,15 +115,9 @@ main :: proc() {
 		for &entity in entities {
 			if len(entity.textures) <= 0 do continue
 
-			if (move &&
-				   entity_collide(&entity, rl.GetMousePosition()) &&
-				   rl.IsMouseButtonPressed(rl.MouseButton.LEFT)) {
-				entity.moving = true
-			}
-
-			if (entity_collide(&entity, rl.GetMousePosition()) &&
-				   rl.IsMouseButtonReleased(rl.MouseButton.LEFT)) {
-				entity.moving = false
+			if entity_collide(&entity, rl.GetMousePosition()) {
+				rl.SetMouseCursor(.POINTING_HAND)
+				entity.moving = move && rl.IsMouseButtonDown(.LEFT)
 			}
 
 			if (entity.moving) {
