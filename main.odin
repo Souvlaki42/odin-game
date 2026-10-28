@@ -90,16 +90,15 @@ main :: proc() {
 	debug := false
 	move := false
 
-	entities := make([dynamic]Entity)
-	defer delete(entities)
-
-	append(&entities, entity_make("Farm Plot", rl.Vector2{35, 600}))
-	append(&entities, entity_make("Fishing Plot", rl.Vector2{210, 82}))
-	append(&entities, entity_make("Pig", rl.Vector2{256, 229}))
-	append(&entities, entity_make("Goat", rl.Vector2{454, 279}))
-	append(&entities, entity_make("Hen", rl.Vector2{48, 153}))
-	append(&entities, entity_make("Sheep", rl.Vector2{73, 43}))
-	append(&entities, entity_make("Cow", rl.Vector2{367, 32}))
+	entities := [7]Entity {
+		entity_make("Farm", rl.Vector2{35, 600}),
+		entity_make("Fish", rl.Vector2{210, 82}),
+		entity_make("Pig", rl.Vector2{256, 229}),
+		entity_make("Goat", rl.Vector2{454, 279}),
+		entity_make("Hen", rl.Vector2{48, 153}),
+		entity_make("Sheep", rl.Vector2{73, 43}),
+		entity_make("Cow", rl.Vector2{367, 32}),
+	}
 
 	defer {
 		for entity in entities {
