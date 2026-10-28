@@ -6,11 +6,6 @@ import strings "core:strings"
 
 import rl "vendor:raylib"
 
-State :: enum {
-	EMPTY,
-	GROWING,
-	READY,
-}
 
 Entity :: struct {
 	name:     string,
@@ -18,7 +13,11 @@ Entity :: struct {
 	position: rl.Vector2,
 	frame:    int,
 	moving:   bool,
-	state:    State,
+	phase:    enum {
+		EMPTY,
+		GROWING,
+		READY,
+	},
 }
 
 entity_collide :: proc(entity: ^Entity, point: rl.Vector2) -> bool {
@@ -58,7 +57,7 @@ entity_make :: proc(name: string, position: rl.Vector2) -> Entity {
 	entity.position = position
 	entity.frame = 0
 	entity.textures = sprites
-	entity.state = State.EMPTY
+	entity.phase = .EMPTY
 
 	return entity
 }
