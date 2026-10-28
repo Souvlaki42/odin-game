@@ -83,13 +83,8 @@ main :: proc() {
 	rl.InitWindow(480, 360, "Odin Game")
 	defer rl.CloseWindow()
 
-	window_state: rl.ConfigFlags
-	if (config.vsync) { window_state |= rl.ConfigFlags{.VSYNC_HINT} }
-	if (config.resizable || config.fullscreen) { window_state |= rl.ConfigFlags{.WINDOW_RESIZABLE } }
-	if (config.fullscreen) { window_state |= rl.ConfigFlags{.WINDOW_MAXIMIZED } }
-
+	window_state: rl.ConfigFlags = {.WINDOW_MAXIMIZED, .WINDOW_RESIZABLE, .VSYNC_HINT}
 	rl.SetWindowState(window_state)
-
 	debug_entries := make([dynamic]cstring)
 	defer delete(debug_entries)
 
@@ -129,7 +124,7 @@ main :: proc() {
 		rl.BeginDrawing()
 		defer rl.EndDrawing()
 
-		rl.ClearBackground(config.background)
+		rl.ClearBackground(rl.ColorFromHSV(108, 0.6, 0.73))
 
 		for &entity in entities {
 			if len(entity.textures) <= 0 do continue
