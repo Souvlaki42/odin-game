@@ -1,11 +1,14 @@
 package main
 
+import "core:fmt"
 import "core:log"
 import os "core:os"
 import strings "core:strings"
 
 import rl "vendor:raylib"
 
+FONT_SIZE :: 24
+TEXT_OFFSET :: [2]i32{10, 10}
 
 Entity :: struct {
 	name:     string,
@@ -60,20 +63,6 @@ entity_make :: proc(name: string, position: rl.Vector2) -> Entity {
 	entity.phase = .EMPTY
 
 	return entity
-}
-
-render_text_menu :: proc(
-	entries: ^[dynamic]cstring,
-	font_size: i32,
-	color: rl.Color,
-	offset: rl.Vector2 = {10, 10},
-) {
-	v_offset := offset.y
-
-	for entry in entries {
-		rl.DrawText(entry, cast(i32)offset.x, cast(i32)v_offset, font_size, color)
-		v_offset += offset.y + cast(f32)font_size
-	}
 }
 
 main :: proc() {
@@ -147,15 +136,17 @@ main :: proc() {
 			rl.DrawTextureV(entity.textures[entity.frame], entity.position, rl.WHITE)
 		}
 
-		if (debug) {
-			append(&debug_entries, rl.TextFormat("FPS: %d", rl.GetFPS()))
-			append(
-				&debug_entries,
-				rl.TextFormat("Mouse: (%d, %d)", rl.GetMouseX(), rl.GetMouseY()),
-			)
-			append(&debug_entries, rl.TextFormat("Move mode: %s", move ? "true" : "false"))
 
-			render_text_menu(&debug_entries, 24, rl.WHITE)
+		if (debug) {
+			debug_entries[0] = rl.TextFormat("FPS: %d", rl.GetFPS())
+			debug_entries[1] = rl.TextFormat("Mouse: (%d, %d)", rl.GetMouseX(), rl.GetMouseY())
+			debug_entries[2] = rl.TextFormat("Move mode: %s", fmt.tprint(move))
+
+			v_offset: i32 = TEXT_OFFSET.y
+			for entry, index in debug_entries {
+				rl.DrawText(entry, TEXT_OFFSET.x, v_offset, FONT_SIZE, rl.WHITE)
+				v_offset += TEXT_OFFSET.y + FONT_SIZE
+			}
 		}
 	}
 }
