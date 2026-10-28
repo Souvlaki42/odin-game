@@ -110,6 +110,8 @@ main :: proc() {
 
 		rl.ClearBackground(rl.ColorFromHSV(108, 0.6, 0.73))
 
+		rl.SetMouseCursor(.DEFAULT)
+
 		for &entity in entities {
 			if len(entity.textures) <= 0 do continue
 
@@ -125,12 +127,13 @@ main :: proc() {
 			}
 
 			if (entity.moving) {
+				rl.SetMouseCursor(.RESIZE_ALL)
 				entity.position =
 					rl.GetMousePosition() -
 					rl.Vector2 {
 							cast(f32)entity.textures[entity.frame].width / 2,
 							cast(f32)entity.textures[entity.frame].height / 2,
-					}
+						}
 			}
 
 			rl.DrawTextureV(entity.textures[entity.frame], entity.position, rl.WHITE)
