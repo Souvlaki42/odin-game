@@ -84,8 +84,7 @@ main :: proc() {
 
 	window_state: rl.ConfigFlags = {.WINDOW_MAXIMIZED, .WINDOW_RESIZABLE, .VSYNC_HINT}
 	rl.SetWindowState(window_state)
-	debug_entries := make([dynamic]cstring)
-	defer delete(debug_entries)
+	debug_entries: [3]cstring = {}
 
 	debug := false
 	move := false
@@ -109,8 +108,6 @@ main :: proc() {
 	}
 
 	for (!rl.WindowShouldClose()) {
-		clear(&debug_entries)
-
 		if (rl.IsKeyPressed(rl.KeyboardKey.F3)) {
 			debug = !debug
 		}
