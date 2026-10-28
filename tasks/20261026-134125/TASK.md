@@ -1,6 +1,6 @@
 # implement a minimal reflective toml like config parser
 
-- STATUS: OPEN
+- STATUS: CLOSED
 - PRIORITY: 100
 - TAGS: features
 
